@@ -20,37 +20,19 @@ namespace BitcoinIRA.Application
 
         public IList<Recipe> GetRecipes()
         {
-            return _ApiDataContext.Recipes.Include(i => i.Ingredients).ToList();
-        }
+            var recipes = _ApiDataContext.Recipes
+                .Include(i => i.RecipeIngredients)
+                .ThenInclude(i => i.Ingredient).OrderBy(x => x.Id).ToList();
 
-
-        private void GetIngredientsPrice(List<Recipe> recipeIngredients)
-        {
-            if (recipeIngredients == null)
-            {
-                throw new ArgumentNullException(nameof(recipeIngredients));
-            }
-
-            var ingredients = _ApiDataContext.Ingredients.ToList();
-
-
-
-            //.ToList();
-            //foreach (var recipe in recipeIngredients)
-            //{
-            //    foreach (var ingredient in recipe.Ingredients
-            //    {
-
-            //    }
-            //}
-
-
-
-            //ingredients.ForEach(i =>
-            //{
-            //    i.Price *
-            //});
-
+            return recipes;
         }
     }
 }
+
+
+
+
+
+
+
+

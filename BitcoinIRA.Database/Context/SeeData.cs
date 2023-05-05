@@ -17,59 +17,61 @@ namespace BitcoinIRA.Database.Context
             using var context = new ApiDataContext(
            serviceProvider.GetRequiredService<DbContextOptions<ApiDataContext>>());
 
+            if (!context.Ingredients.Any())
+            {
+                var ingredients = new List<Ingredient>
+                {
+                    new Ingredient{ Id= 1, Name ="organic garlic",  UnitCost = 0.67m, IsOrganic= true, IngredientCategory = IngredientCategoryEnum.Produce.ToString() },
+                    new Ingredient{ Id=2,  Name ="lemon", UnitCost = 2.03m, IsOrganic= false, IngredientCategory = IngredientCategoryEnum.Produce.ToString() },
+                    new Ingredient{ Id= 3, Name ="corn",  UnitCost=0.87m, IsOrganic= false, IngredientCategory = IngredientCategoryEnum.Produce.ToString() },
+                    new Ingredient{ Id=4, Name ="chicken breast", UnitCost=2.19m, IsOrganic= false, IngredientCategory = IngredientCategoryEnum.Pantry.ToString() },
+                    new Ingredient{ Id=5, Name ="bacon", UnitCost=0.24m, IsOrganic= false, IngredientCategory = IngredientCategoryEnum.Pantry.ToString()},
+                    new Ingredient{ Id=6, Name ="pasta", UnitCost=0.31m,  IsOrganic= false ,IngredientCategory = IngredientCategoryEnum.Pantry.ToString()},
+                    new Ingredient{ Id=7, Name ="organic olive oil", UnitCost=1.92m, IsOrganic= true, IngredientCategory = IngredientCategoryEnum.Pantry.ToString() },
+                    new Ingredient{ Id=8, Name ="vinegar", UnitCost=1.26m, IsOrganic= true,IngredientCategory = IngredientCategoryEnum.Pantry.ToString() },
+                    new Ingredient{ Id=9, Name ="salt", UnitCost=0.16m, IsOrganic= false,IngredientCategory = IngredientCategoryEnum.Pantry.ToString() },
+                    new Ingredient{ Id=10, Name ="pepper", UnitCost=0.17m, IsOrganic= false,IngredientCategory = IngredientCategoryEnum.Pantry.ToString() }};
+
+                context.Ingredients.AddRange(ingredients);
+                context.SaveChanges();
+            };
+
             if (!context.Recipes.Any())
             {
                 var recipes = new List<Recipe>()
                 {
-                   new Recipe { Name ="Recipe 1", Ingredients = new List<Ingredient>
-                       { new Ingredient{ Name ="organic garlic", Price=0.67m, Quantity = 1, IsOrganic= true },
-                         new Ingredient{ Name ="lemon", Quantity = 1,Price=0.67m, IsOrganic= false },
-                         new Ingredient{ Name ="organic olive oil",Price=0.67m, Quantity=0.75 , IsOrganic= true },
-                         new Ingredient{ Name ="salt", Price=0.67m, Quantity=0.75, IsOrganic= false },
-                         new Ingredient{ Name ="pepper", Price=0.67m, Quantity=0.5, IsOrganic= false },
-                       }
-                    },
-                   new Recipe { Name ="Recipe 2", Ingredients = new List<Ingredient>
-                       { new Ingredient{ Name ="organic garlic",Price=0.67m, Quantity= 1, IsOrganic= true },
-                         new Ingredient{ Name ="chicken breast",Price=0.67m, Quantity= 4, IsOrganic= false },
-                         new Ingredient{ Name ="organic olive oil",Price=0.67m, Quantity= 0.5, IsOrganic= true },
-                         new Ingredient{ Name ="vinegar",Price=0.67m, Quantity=0.5, IsOrganic= true },
-                       }
-                    },
-                   new Recipe { Name ="Recipe 3", Ingredients = new List<Ingredient>
-                       { new Ingredient{ Name ="organic garlic", Quantity=1, Price= 0.31m, IsOrganic= true },
-                         new Ingredient{ Name ="corn", Price=0.67m,Quantity=4, IsOrganic= false },
-                         new Ingredient{ Name ="bacon", Price=0.67m,Quantity=4, IsOrganic= false },
-                         new Ingredient{ Name ="pasta", Price=0.67m,Quantity=8,  IsOrganic= false },
-                         new Ingredient{ Name ="organic olive oil",Price=0.67m, Quantity=0.33, IsOrganic= true },
-                         new Ingredient{ Name ="salt",Price=0.67m, Quantity=1.25, IsOrganic= true },
-                         new Ingredient{ Name ="pepper", Price=0.67m,Quantity=0.75, IsOrganic= true },
-                       }
-                    }
+                   new Recipe { Id=1, Name ="Recipe 1" },
+                   new Recipe { Id=2, Name ="Recipe 2"},
+                   new Recipe { Id=3, Name ="Recipe 3" }
                 };
 
                 context.Recipes.AddRange(recipes);
                 context.SaveChanges();
             }
 
-            if (!context.Ingredients.Any())
+            if (!context.RecipeIngredients.Any())
             {
+                var recipeIngredient = new List<RecipeIngredient>()
+                {
+                    new RecipeIngredient{ RecipeId = 1, IngredientId =1, Quantity=1 },
+                    new RecipeIngredient{ RecipeId = 1, IngredientId =2 , Quantity=1 },
+                    new RecipeIngredient{ RecipeId = 1, IngredientId =7 , Quantity=0.75 },
+                    new RecipeIngredient{ RecipeId = 1,IngredientId =9 , Quantity=0.75 },
+                    new RecipeIngredient{ RecipeId = 1,IngredientId =10 ,  Quantity=0.5 },
+                    new RecipeIngredient{ RecipeId = 2,IngredientId =1 ,  Quantity=1 },
+                    new RecipeIngredient{ RecipeId = 2,IngredientId =4 , Quantity=4 },
+                    new RecipeIngredient{ RecipeId = 2, IngredientId =7 ,  Quantity=0.5 },
+                    new RecipeIngredient{ RecipeId = 2, IngredientId =8 ,  Quantity=0.5 },
+                    new RecipeIngredient{ RecipeId = 3, IngredientId =1 ,  Quantity=1 },
+                    new RecipeIngredient{ RecipeId = 3,IngredientId =3 ,  Quantity=4 },
+                    new RecipeIngredient{ RecipeId = 3,IngredientId =5 ,  Quantity=4 },
+                    new RecipeIngredient{ RecipeId = 3,IngredientId =6 ,  Quantity=8 },
+                    new RecipeIngredient{ RecipeId = 3,IngredientId =7 ,  Quantity=0.33 },
+                    new RecipeIngredient{ RecipeId = 3,IngredientId =9 ,  Quantity=1.25 },
+                    new RecipeIngredient{ RecipeId = 3,IngredientId =10 ,  Quantity=0.75 },
+                };
 
-                var ingredients = new List<Ingredient>{
-            new Ingredient{ Name ="organic garlic", Quantity = 1, IsOrganic= true, IngredientCategory = IngredientCategoryEnum.Produce  },
-            new Ingredient{ Name ="lemon", Quantity = 1, IsOrganic= false, IngredientCategory = IngredientCategoryEnum.Produce },
-            new Ingredient{ Name ="corn", Quantity=4, IsOrganic= false, IngredientCategory = IngredientCategoryEnum.Produce },
-
-            new Ingredient{ Name ="chicken breast", Quantity= 4, IsOrganic= false, IngredientCategory = IngredientCategoryEnum.Pantry },
-            new Ingredient{ Name ="bacon", Quantity=4, IsOrganic= false, IngredientCategory = IngredientCategoryEnum.Pantry },
-
-            new Ingredient{ Name ="pasta", Quantity=8,  IsOrganic= false ,IngredientCategory = IngredientCategoryEnum.Pantry},
-            new Ingredient{ Name ="organic olive oil", Quantity=0.75 , IsOrganic= true, IngredientCategory = IngredientCategoryEnum.Pantry },
-            new Ingredient{ Name ="vinegar", Quantity=0.5, IsOrganic= true,IngredientCategory = IngredientCategoryEnum.Pantry },
-            new Ingredient{ Name ="salt", Quantity=0.75, IsOrganic= false,IngredientCategory = IngredientCategoryEnum.Pantry },
-            new Ingredient{ Name ="pepper", Quantity=0.5, IsOrganic= false,IngredientCategory = IngredientCategoryEnum.Pantry }};
-
-                context.Ingredients.AddRange(ingredients);
+                context.RecipeIngredients.AddRange(recipeIngredient);
                 context.SaveChanges();
             }
         }

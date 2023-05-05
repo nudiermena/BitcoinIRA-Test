@@ -18,20 +18,24 @@ namespace BitcoinIRA.Application
         private const decimal NEAREST_7CENTS = 0.07m;
 
         private readonly IRecipeRepository _iRecipeRepository;
-        public CalculatorRepository(IRecipeRepository recipeRepository)
+        private readonly IIngredientRepository _ingredientRepository;
+        private List<Ingredient>? _ingredientList;
+        public CalculatorRepository(IRecipeRepository recipeRepository, IIngredientRepository ingredientRepository)
         {
             _iRecipeRepository = recipeRepository;
+            _ingredientRepository = ingredientRepository;
         }
 
         public IList<RecipeResponse> CalculateAllRecipes()
         {
             var recipesResponse = new List<RecipeResponse>();
             var recipes = _iRecipeRepository.GetRecipes();
+            _ingredientList = (List<Ingredient>)_ingredientRepository.GetIngredients();
 
             foreach (var recipe in recipes)
             {
-                var recipedata = ComputeTotalCost(recipe);
-                recipesResponse.Add(recipedata);
+                var ComputedRecipedata = ComputeTotalCost(recipe);
+                recipesResponse.Add(ComputedRecipedata);
             }
 
             return recipesResponse;
@@ -41,41 +45,51 @@ namespace BitcoinIRA.Application
         {
             decimal totalCost = 0;
             decimal discount = 0;
-            foreach (var ingredient in recipe.Ingredients)
+            foreach (var ingredient in recipe.RecipeIngredients)
             {
-                decimal ingredientCost = ingredient.Price == null ? 2 : 10;
+                decimal ingredientUnitCost = ingredient.Ingredient.UnitCost;
+                var item2 = _ingredientList.FirstOrDefault(x => x.Id == ingredient.IngredientId);
+                if (item2 != default)
+                {
 
-                if (!ingredient.IngredientCategory.Equals(IngredientCategoryEnum.Produce))
+                    ingredientUnitCost = Convert.ToDecimal(ingredient.Quantity) * item2.UnitCost;
+                }
+
+                if (!ingredient.Ingredient.IngredientCategory.Equals(IngredientCategoryEnum.Produce))
                 {
                     // Apply sales tax
-                    decimal salesTax = ingredientCost * (decimal)SALES_TAX_RATE;
-                    ingredientCost += RoundToNearestSevenCents(salesTax);
+                    decimal salesTax = ingredientUnitCost * (decimal)SALES_TAX_RATE;
+                    ingredientUnitCost += RoundToNearestSevenCents(salesTax);
                 }
 
-                if (ingredient.IsOrganic)
+                /*- Wellness Discount (-%5 of the total price rounded up to the nearest cent, applies only to organic items)*/
+                if (ingredient.Ingredient.IsOrganic)
                 {
                     // Apply wellness discount
-                    discount = ingredientCost * (decimal)WELLNESS_DISCOUNT_RATE;
-                    ingredientCost -= RoundToNearestCent(discount);
+                    discount = ingredientUnitCost * (decimal)WELLNESS_DISCOUNT_RATE;
+                    ingredientUnitCost -= RoundToNearestCent(discount);
                 }
 
-                totalCost += ingredientCost;
+                totalCost += ingredientUnitCost;
             }
 
             // Apply sales tax to the total cost
-            decimal totalSalesTax = totalCost * SALES_TAX_RATE;
-            totalCost += RoundToNearestSevenCents(0);
+            decimal totalSalesTax = Math.Ceiling(totalCost * SALES_TAX_RATE * 100) / 100;
+            totalCost += RoundToNearestSevenCents(totalSalesTax);
+            totalCost = RoundToNearestCent(totalCost);
+            discount = RoundToNearestCent(discount);
+            totalSalesTax = RoundToNearestCent(totalSalesTax);
 
-            return new RecipeResponse { RecipeName = recipe.Name, SalesTax = 0, WellnessDiscount = discount, TotalCost = totalCost };
+            return new RecipeResponse { RecipeName = recipe.Name, SalesTax = totalSalesTax, WellnessDiscount = discount, TotalCost = totalCost };
         }
 
-        private decimal RoundToNearestSevenCents(decimal amount)
+        private static decimal RoundToNearestSevenCents(decimal amount)
         {
-            decimal roundedAmount = Math.Ceiling(amount * 100 / NEAREST_7CENTS) * NEAREST_7CENTS / 100;
+            decimal roundedAmount = Math.Ceiling(amount / NEAREST_7CENTS) * NEAREST_7CENTS;
             return roundedAmount;
         }
 
-        private decimal RoundToNearestCent(decimal amount)
+        private static decimal RoundToNearestCent(decimal amount)
         {
             decimal roundedAmount = Math.Round(amount, 2);
             return roundedAmount;
